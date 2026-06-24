@@ -1,0 +1,12 @@
+[project]
+name = "comfyui-layer-separation"
+version = "1.0.0"
+description = "详情图层分离 ComfyUI 节点: 背景(LaMa) + 前景元素(BiRefNet) + 文字(OCR/VLM)"
+license = "MIT"
+requires-python = ">=3.10"
+
+[project.urls]
+Repository = "https://github.com/zriyox/ComfyUI-LayerSeparation"
+
+[tool.comfy]
+DisplayName = "详情图层分离 Layer Separation"

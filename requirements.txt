@@ -1,0 +1,12 @@
+# 详情图层分离节点依赖。
+# ComfyUI 自带 torch / torchvision / numpy / pillow / scipy, 这里不重复列。
+rembg                    # 前景抠图 (BiRefNet / u2net / isnet)
+rapidocr-onnxruntime     # 文字 OCR
+simple-lama-inpainting   # 背景 LaMa 修复
+opencv-python-headless   # cv2 图像处理
+httpx                    # 可选 VLM (qwen-vl) HTTP 调用
+
+# GPU 加速说明:
+# rapidocr-onnxruntime 会拉入 CPU 版 onnxruntime。如需 GPU 加速 ONNX 模型(rembg/OCR),
+# 在 GPU 环境执行:  pip uninstall onnxruntime -y && pip install onnxruntime-gpu
+# pipeline 会按可用 provider(CUDA>CoreML>CPU) 自动选择, 无 GPU 时自动回退 CPU, 不会报错。
