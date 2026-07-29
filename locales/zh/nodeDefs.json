@@ -13,7 +13,8 @@
             "ocr_min_score": { "name": "OCR最低分", "display_name": "OCR最低分", "tooltip": "OCR 置信度下限, 低于此的文字丢弃。" },
             "vlm_model": { "name": "VLM模型", "display_name": "VLM模型", "tooltip": "VLM 模型名(DashScope), 如 qwen-vl-max / qwen-vl-plus。VLM关闭时忽略。" },
             "element_mode": { "name": "前景元素模式", "display_name": "前景元素模式", "tooltip": "前景元素输出模式。canvas=元素贴回原画布; cropped=只输出裁剪小图。" },
-            "mask_mode": { "name": "前景蒙版模式", "display_name": "前景蒙版模式", "tooltip": "前景蒙版输出模式。canvas=蒙版贴回原画布; cropped=只输出元素裁剪范围内的蒙版。" }
+            "mask_mode": { "name": "前景蒙版模式", "display_name": "前景蒙版模式", "tooltip": "前景蒙版输出模式。canvas=蒙版贴回原画布; cropped=只输出元素裁剪范围内的蒙版。" },
+            "text_keep_fg_overlap": { "name": "商品文字保护", "display_name": "商品文字保护", "tooltip": "填数字时仅保护品牌/包装文字; 填 none 时 OCR 识别到的文字全部去除。" }
         },
         "outputs": {
             "0": { "name": "背景层", "tooltip": "LaMa 修复后的干净背景 (IMAGE)。" },

@@ -11,7 +11,12 @@ __pycache__/
 *.pyc
 *.pyo
 
-# 模型权重(首次运行自动下载, 不入库)
+# 模型权重(默认不入库)
 *.onnx
 *.pt
 *.pth
+
+# rembg 模型固定随插件分发; 建议配合 Git LFS 提交这些大文件。
+!models/
+!models/rembg/
+!models/rembg/*.onnx
