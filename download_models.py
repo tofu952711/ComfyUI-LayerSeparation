@@ -9,8 +9,12 @@
 """
 import sys
 import os
+from pathlib import Path
 
-os.environ.setdefault("U2NET_HOME", os.path.join(os.path.expanduser("~"), ".u2net"))
+ROOT = Path(__file__).resolve().parent
+REMBG_MODEL_DIR = ROOT / "models" / "rembg"
+REMBG_MODEL_DIR.mkdir(parents=True, exist_ok=True)
+os.environ["U2NET_HOME"] = str(REMBG_MODEL_DIR)
 
 
 def pull_rembg(models):

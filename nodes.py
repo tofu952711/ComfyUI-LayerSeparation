@@ -76,6 +76,10 @@ class LayerSeparationNode:
                     "default": "canvas",
                     "tooltip": "前景蒙版输出模式。canvas=蒙版贴回原画布(便于直接接遮罩节点); cropped=只输出元素裁剪范围内的蒙版(省内存)。",
                 }),
+                "text_keep_fg_overlap": ("STRING", {
+                    "default": "0.45", "multiline": False,
+                    "tooltip": "商品文字保护阈值。填数字时仅保护品牌/包装文字; 填 none 时 OCR 识别到的文字全部去除。",
+                }),
             },
         }
 
@@ -184,7 +188,27 @@ class LayerSeparationNode:
     # ---------------- 主入口 ----------------
     def separate(self, image, use_vlm=True, fg_model="birefnet-general", dashscope_api_key="",
                  min_area=0.0015, close_ksize=3, alpha_thr=30, ocr_min_score=0.5,
-                 vlm_model="qwen-vl-max", element_mode="canvas", mask_mode="canvas"):
+                 vlm_model="qwen-vl-max", element_mode="canvas", mask_mode="canvas",
+                 text_keep_fg_overlap=0.45):
+        def _text_keep_setting(value, default=0.45):
+            raw = str(value).strip().lower()
+            if raw in {"none", "off", "false", "no", "remove_all", "all_remove"}:
+                return "none"
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                return default
+            return max(0.0, min(1.0, value))
+
+        valid_modes = {"canvas", "cropped"}
+        if vlm_model in valid_modes:
+            vlm_model = "qwen-vl-max"
+        if element_mode not in valid_modes:
+            element_mode = "canvas"
+        if mask_mode not in valid_modes:
+            mask_mode = "canvas"
+        text_keep_fg_overlap = _text_keep_setting(text_keep_fg_overlap)
+
         # 统一密钥/模型入口: 节点上填了就写进环境变量, pipeline 优先读 env;
         # 留空则沿用 env / 仓库 .env 的现有兜底。
         key = (dashscope_api_key or "").strip()
@@ -208,6 +232,7 @@ class LayerSeparationNode:
             manifest = pipeline.run_pipeline(
                 str(input_png), workdir, stem="input", use_vlm=use_vlm, fg_model=fg_model,
                 fg_kwargs=fg_kwargs, text_min_score=float(ocr_min_score),
+                text_keep_fg_overlap=text_keep_fg_overlap,
             )
 
             W = int(manifest["canvas"]["width"])
