@@ -129,14 +129,15 @@ class LayerSeparationNode:
           canvas : 按 bbox 贴回 (W,H) 全画布, 与 manifest 渲染语义一致, 便于直接合成/接遮罩。
           cropped: 各自输出自己 bbox 的真实尺寸 (w,h), 不补零到全体最大尺寸(那会把小元素
                    全撑到画布尺寸, 既不省内存也让裁剪图尺寸对不上 bbox)。
-        返回 list[ [1,h,w,3] ] / list[ [1,h,w] ], 配合节点 OUTPUT_IS_LIST,
-        下游 Preview/Save 逐帧各自原尺寸接收。transparent 模式保留独立 mask 语义;
+        返回 list[ [1,h,w,3/4] ] / list[ [1,h,w] ], 配合节点 OUTPUT_IS_LIST,
+        下游 Preview/Save 逐帧各自原尺寸接收。transparent 模式直接输出 RGBA;
         black/white 模式把 RGB 直接合成到对应底色上。"""
         W = int(manifest["canvas"]["width"])
         H = int(manifest["canvas"]["height"])
         items = [it for it in manifest.get("images", []) if it["bbox"][2] > 0 and it["bbox"][3] > 0]
         if not items:  # N=0 兜底, 给下游一帧全0, 避免空 list 崩
-            return [torch.zeros((1, H, W, 3), dtype=torch.float32)], [torch.zeros((1, H, W), dtype=torch.float32)]
+            channels = 4 if element_background == "transparent" else 3
+            return [torch.zeros((1, H, W, channels), dtype=torch.float32)], [torch.zeros((1, H, W), dtype=torch.float32)]
         imgs, masks = [], []
         for item in items:
             x, y, w, h = item["bbox"]
@@ -158,12 +159,12 @@ class LayerSeparationNode:
             src_alpha = rgba[..., 3:4]
             if element_background == "white":
                 bg = np.ones_like(rgba[..., :3])
-                rgb = rgba[..., :3] * src_alpha + bg * (1.0 - src_alpha)
+                image_out = rgba[..., :3] * src_alpha + bg * (1.0 - src_alpha)
             elif element_background == "black":
-                rgb = rgba[..., :3] * src_alpha
+                image_out = rgba[..., :3] * src_alpha
             else:
-                rgb = rgba[..., :3] * src_alpha                 # 透明处清零, alpha 仍在 element_masks
-            imgs.append(torch.from_numpy(rgb)[None, ...])        # [1,h,w,3]
+                image_out = rgba                                # [h,w,4] RGBA, 保存/预览时真正透明
+            imgs.append(torch.from_numpy(image_out)[None, ...])  # [1,h,w,3/4]
             masks.append(torch.from_numpy(alpha)[None, ...])     # [1,h,w]
         return imgs, masks
 
